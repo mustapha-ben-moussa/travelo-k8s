@@ -1,0 +1,58 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travelo-frontend
+  namespace: travelo
+  labels:
+    app: travelo-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: travelo-frontend
+  template:
+    metadata:
+      labels:
+        app: travelo-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: mustapha37/travelo-frontend:k8s-1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          startupProbe:
+            httpGet:
+              path: /
+              port: 3000
+            periodSeconds: 3
+            failureThreshold: 20
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: travelo-frontend
+  namespace: travelo
+spec:
+  selector:
+    app: travelo-frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
